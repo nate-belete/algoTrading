@@ -5,7 +5,7 @@ import numpy as np
 from Strategies.BigBodyReversal import BigBodyReversal
 
 # get data
-df = yf.download('SPY', '2015-01-01', '2022-12-31', interval = '1wk')
+df = yf.download('NVDA', '2015-01-01', '2022-12-31', interval = '1d')
 
 # establish an instance
 cerebro = bt.Cerebro()
@@ -32,7 +32,7 @@ cerebro.run()
 print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
 # Return if buy and hold 
-# hold = df['Close'][-1]/df['Close'][0]*10000
-# print("Return if you just held position {}".format(hold))
+hold = df['Close'][-1]/df['Close'][0]*10000
+print("Return if you just held position {}".format(hold))
 
 cerebro.plot()

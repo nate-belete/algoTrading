@@ -10,7 +10,7 @@ class BigBodyReversal(bt.Strategy):
     # list of parameters which are configurable for the strategy
     params = dict(
         
-        ratio = 0.20
+        ratio = 0.30
     )
 
     def log(self, txt):
@@ -104,23 +104,17 @@ class BigBodyReversal(bt.Strategy):
 
         self.candleBodySize.append(abs((self.dataopen[0] - self.dataclose[0])/(self.datahigh[0] - self.datalow[0])))
 
-        print(len(self.prior_returns))
+
 
         if len(self.prior_returns) > 15 :
-            roi_90th = np.quantile(self.prior_returns,0.90)
+            roi_90th = np.quantile(self.candleBodySize,0.90)
 
-            print("self.datadatetime:", self.datadatetime[0])
 
-            print("self.datahigh[0]: ", self.datahigh[0])
-            print("self.datahigh[-1]: ", self.datahigh[-1])
-
-            print("self.prior_returns[-2]: ", self.prior_returns[-2])
-            print("self.prior_returns[-1]: ", self.prior_returns[-1] )
-
-            # print("self.candleBodySize[-2]: ", self.candleBodySize[-2])
-            # print("self.candleBodySize[-1]: ", self.candleBodySize[-1] )
             
-            if (self.prior_returns[-2] > 0.75)  & (self.prior_returns[-1] > 0.75)  & (self.datahigh[0] > self.datahigh[-1]):
+            if (self.candleBodySize[-2] > 0.75)  & (self.candleBodySize[-1] > 0.75
+                        )  & (self.datahigh[0] > self.datahigh[-1]) & (self.datahigh[-1] < self.datahigh[-2]
+                        ) & (self.datahigh[0] / self.datahigh[-1] <= 1.05) & (self.datahigh[0] / self.datahigh[-1] >= 1
+                        ) &(self.candleBodySize[-1] > roi_90th):
                 # BUY, BUY, BUY!!! (with default parameters)
                 self.log('BUY CREATED, %.2f' % self.dataclose[0])
 
