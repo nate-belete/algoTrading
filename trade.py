@@ -2,10 +2,10 @@ import datetime as dt
 import yfinance as yf
 import backtrader as bt 
 import numpy as np
-from Strategies.smaCross import SmaCross
+from Strategies.BigBodyReversal import BigBodyReversal
 
 # get data
-df = yf.download('SPY', '2015-01-01', '2022-12-31')
+df = yf.download('SPY', '2015-01-01', '2022-12-31', interval = '1wk')
 
 # establish an instance
 cerebro = bt.Cerebro()
@@ -17,7 +17,7 @@ feed = bt.feeds.PandasData(dataname = df)
 cerebro.adddata(feed)
 
 # add strategy
-cerebro.addstrategy(SmaCross)
+cerebro.addstrategy(BigBodyReversal)
 
 # Set initial account value
 cerebro.broker.setcash(10000)
@@ -32,7 +32,7 @@ cerebro.run()
 print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
 # Return if buy and hold 
-hold = df['Close'][-1]/df['Close'][0]*10000
-print("Return if you just held position {}".format(hold))
+# hold = df['Close'][-1]/df['Close'][0]*10000
+# print("Return if you just held position {}".format(hold))
 
 cerebro.plot()

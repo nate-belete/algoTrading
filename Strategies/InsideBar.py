@@ -6,12 +6,12 @@ import numpy as np
 cerebro = bt.Cerebro()
 
 
-class SmaCross(bt.Strategy):
+class InsideBar(bt.Strategy):
     # list of parameters which are configurable for the strategy
     params = dict(
         pfast = 50,  # period for the fast moving average
         pslow = 200,   # period for the slow moving average
-        ratio = 0.40
+        ratio = 0.20
     )
 
     def log(self, txt):
@@ -33,6 +33,9 @@ class SmaCross(bt.Strategy):
     def __init__(self):
         # Keep a reference to the "close" line in the data[0] dataseries
         self.dataclose = self.datas[0].close
+        self.datahigh = self.datas[0].high
+        self.datalow = self.datas[0].low
+        self.dataopen = self.datas[0].open
 
         # To keep track of pending orders
         self.order = None
@@ -103,9 +106,9 @@ class SmaCross(bt.Strategy):
         # check if you have funds to trade
         self.sma_spread.append( self.dataclose[0] - self.fast_SMA )
 
-        if (len(self.sma_spread) >= 7) & (self.dataclose[0] < self.fast_SMA):
-            vol_90th = np.quantile(self.sma_spread[-7:-2],0.90)
-            if self.sma_spread[-1] > vol_90th:
+        if (self.dataclose[0] < self.datahigh[-2]) & (self.dataclose[-1] < self.datahigh[-2]) :
+            
+            if (self.datalow[0] > self.datalow[-2]) & (self.datalow[-1] > self.datalow[-2])  :
                 # BUY, BUY, BUY!!! (with default parameters)
                 self.log('BUY CREATED, %.2f' % self.dataclose[0])
 
@@ -128,9 +131,8 @@ class SmaCross(bt.Strategy):
                             # keep track of account value
                 self.account_Value.append(cerebro.broker.getvalue())
 
-        if (len(self.sma_spread) >= 7) & (self.dataclose[0] > self.fast_SMA):
-            vol_90th = np.quantile(self.sma_spread[-7:-2],0.90)
-            if (self.sma_spread[-1] > vol_90th) &(self.holdings >= 10):
+        if (self.holdings >= 10):
+            if (self.holdings >= 10):
 
         # if 
                 self.log('SELL CREATED, %.2f' % self.dataclose[0])
