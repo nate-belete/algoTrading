@@ -2,10 +2,10 @@ import datetime as dt
 import yfinance as yf
 import backtrader as bt 
 import numpy as np
-from Strategies.BigBodyReversal import BigBodyReversal
+from Strategies.roiBands import roiBands
 
 # get data
-df = yf.download('NVDA', '2015-01-01', '2022-12-31', interval = '1d')
+df = yf.download('SBUX', '2022-01-01', '2022-12-31', interval = '1d')
 
 # establish an instance
 cerebro = bt.Cerebro()
@@ -17,7 +17,7 @@ feed = bt.feeds.PandasData(dataname = df)
 cerebro.adddata(feed)
 
 # add strategy
-cerebro.addstrategy(BigBodyReversal)
+cerebro.addstrategy(roiBands)
 
 # Set initial account value
 cerebro.broker.setcash(10000)
