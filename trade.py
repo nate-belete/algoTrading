@@ -5,7 +5,7 @@ import numpy as np
 from Strategies.roiBootStrapped import roiBootStrapped
 
 # get data
-df = yf.download('SPY','2021-01-01', '2022-12-31', interval='1d')
+df = yf.download('SPY','2021-01-01', '2022-12-31', interval='1h')
 
 # establish an instance
 cerebro = bt.Cerebro()

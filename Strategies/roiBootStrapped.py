@@ -21,8 +21,8 @@ class roiBootStrapped(bt.Strategy):
         self.sell_Hits = 3
 
         # bootstrapped means 
-        self.boot_ratio_from_high_mean = -0.029263291875377264
-        self.boot_ratio_from_low_mean = 0.037883740959221444
+        self.boot_ratio_from_high_mean = -0.029245190533739255
+        self.boot_ratio_from_low_mean = 0.03790078912065787
 
         self.date_ = []
         self.open_ = []
@@ -36,8 +36,8 @@ class roiBootStrapped(bt.Strategy):
         self.roi_from_high = []
         self.roi_from_low = []
 
-        self.roi_from_high_10th_pct = []
-        self.roi_from_low_90th_pct = []
+        self.roi_from_high_10th_pct = [0] * (self.period-1)
+        self.roi_from_low_90th_pct = [0] * (self.period-1)
 
         # To keep track of pending orders
         self.order = None
@@ -134,83 +134,105 @@ class roiBootStrapped(bt.Strategy):
             self.roi_from_high.append(self.close_[-1] / self.close_p15_max[-1] - 1)
             self.roi_from_low.append(self.close_[-1] / self.close_p15_min[-1] - 1 )
 
-            self.roi_from_high_10th_pct.append(np.quantile(self.roi_from_high,0.10))
-            self.roi_from_low_90th_pct.append(np.quantile(self.roi_from_low,0.90))
+            
 
+            self.roi_from_high_10th_pct.append(np.quantile(self.roi_from_high[-self.period:],0.10))
+            self.roi_from_low_90th_pct.append(np.quantile(self.roi_from_low[-self.period:],0.90))
 
             if (self.roi_from_high[-1] <= self.roi_from_high_10th_pct[-1]):
-                
-                # if trigger has been on for buy_Hits period, and the trigger just turned off
-                while (self.buy_triggers > self.buy_Hits):
+                    
+                    # if trigger has been on for buy_Hits period, and the trigger just turned off
+                while (self.buy_triggers > self.buy_Hits) & (self.roi_from_high[-1] <= self.boot_ratio_from_high_mean):
+                    # print("self.buy_triggers ", self.buy_triggers)
+                    # print("self.buy_Hits ", self.buy_Hits)
+                    # print("--")
+                    # print("roi_from_high[-1] ", self.roi_from_high[-1])
+                    # print("self.boot_ratio_from_high_mean ", self.boot_ratio_from_high_mean)
+                    # print("--")
+                    # print("--")
+                    # print("--")
 
-                    # if rolling ROI exceeds the bootstapped mean
-                    if (self.roi_from_high[-1] <= self.boot_ratio_from_high_mean):
-                        # BUY, BUY, BUY!!! (with default parameters)
+                        # if rolling ROI exceeds the bootstapped mean
+                    
 
-                        self.log('BUY CREATED, %.2f' % self.close_[-1])
+                            # BUY, BUY, BUY!!! (with default parameters)
 
-                        # the currenr account value
-                        account_value = self.broker.get_cash() 
+                    self.log('BUY CREATED, %.2f' % self.close_[-1])
 
-                        # the number of shares I can buy
-                        total_shares = round(account_value * self.tradeSize_accountPct / self.close_[-1])
+                            # the currenr account value
+                    account_value = self.broker.get_cash() 
 
-                        # Keep track of the created order to avoid a 2nd order
-                        self.order = self.buy(size=total_shares)
+                            # the number of shares I can buy
+                    total_shares = round(account_value * self.tradeSize_accountPct / self.close_[-1])
 
-                        if total_shares >= 1:
-                            self.holdings += 1
-                            self.total_shares_holding.append(total_shares)
+                            # Keep track of the created order to avoid a 2nd order
+                    self.order = self.buy(size=total_shares)
 
-                                    # print order info
-                        self.orderInfo(total_shares)
+                    if total_shares >= 1:
+                        self.holdings += 1
+                        self.total_shares_holding.append(total_shares)
 
-                                    # keep track of account value
-                        self.account_Value.append(cerebro.broker.getvalue())
+                                        # print order info
+                    self.orderInfo(total_shares)
 
-                        self.buy_triggers = 0
+                                        # keep track of account value
+                    self.account_Value.append(cerebro.broker.getvalue())
+
+                    self.buy_triggers = 0
 
                 self.buy_triggers += 1
 
-        
+            
             if  (self.roi_from_low[-1] >= self.roi_from_low_90th_pct[-1]):
-                #& (len(self.total_shares_holding)>0):
+
+                # print("self.sell ")
+                # print("self.buy_Hits ", self.buy_Hits)
+                # print("--")
+                # print("roi_from_low[-1] ", self.roi_from_low[-1])
+                # print("self.roi_from_low_90th_pct ", self.roi_from_low_90th_pct[-1])
+                # print("--")
+                # print("--")
+                # print("--")
+                    #& (len(self.total_shares_holding)>0):
 
                 tot_shares = sum(self.total_shares_holding)
 
+                print("tot_shares ", tot_shares)
+
                 if (tot_shares > 0 ):
-                    while (self.sell_triggers >= self.sell_Hits):
-                        # if rolling ROI exceeds the bootstapped mean
-                        if (self.roi_from_low[-1] >= self.boot_ratio_from_low_mean):
-
-                            self.log('SELL CREATED, %.2f' % self.close_[-1])
-
-                            # place sell order
-                            # self.order = self.sell(size = self.total_shares_holding[0]) 
-                            # sell all shares 
-                            
-                            self.order = self.sell(size = tot_shares) 
+                    while (self.sell_triggers >= self.sell_Hits) & ((self.roi_from_low[-1] >= self.boot_ratio_from_low_mean)):
+                            # if rolling ROI exceeds the bootstapped mean
 
 
+                        self.log('SELL CREATED, %.2f' % self.close_[-1])
+
+                                # place sell order
+                                # self.order = self.sell(size = self.total_shares_holding[0]) 
+                                # sell all shares 
                                 
-                            self.orderInfo(tot_shares)
+                        self.order = self.sell(size = tot_shares) 
 
-                                # reduce holding position
-                            self.holdings -= 1
 
-                                # update remaining positions
-                            self.total_shares_holding = [0]
+                                    
+                        self.orderInfo(tot_shares)
 
-                            self.sell_triggers = 0
+                                    # reduce holding position
+                        self.holdings -= 1
+
+                                    # update remaining positions
+                        self.total_shares_holding = [0]
+
+                        self.sell_triggers = 0
                     self.sell_triggers += 1
 
         data = {'Date': self.date_[self.period:],
                 'Close': self.close_[self.period:],
                 'roi_from_high': self.roi_from_high,
                 'roi_from_low': self.roi_from_low,
-                'roi_from_high_10th_pct': self.roi_from_high_10th_pct,
-                'roi_from_low_90th_pct': self.roi_from_low_90th_pct
+                'roi_from_high_10th_pct': self.roi_from_high_10th_pct[self.period-1:],
+                'roi_from_low_90th_pct': self.roi_from_low_90th_pct[self.period-1:]
                 }
+
         data = pd.DataFrame(data)
         data.to_csv('results.csv')
 
