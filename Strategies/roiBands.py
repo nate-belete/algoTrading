@@ -8,27 +8,23 @@ cerebro = bt.Cerebro()
 
 
 class roiBands(bt.Strategy):
-    # list of parameters which are configurable for the strategy
-    params = dict(
-        
-        ratio = 0.50
-    )
-
 
     def __init__(self):
-        # Keep a reference to the "close" line in the data[0] dataseries
-        self.datadate = self.datas[0].datetime.date(0)
-        self.dataopen = self.datas[0].open
-        self.datahigh = self.datas[0].high
-        self.datalow = self.datas[0].low
-        self.dataclose = self.datas[0].close
+
+        # number of datapoints needed to build strategy
+        self.period = 21
+        # percent of funds avaiable used on each trade
+        self.tradeSize_accountPct = 0.50
+
+        # number of buy hits trigerred before buying or selling
+        self.buy_Hits = 10
+        self.sell_Hits = 3
 
         self.date_ = []
         self.open_ = []
         self.high_ = []
         self.low_ = []
         self.close_ = []
-
 
         self.close_p15_max = []
         self.close_p15_min = []
@@ -39,19 +35,8 @@ class roiBands(bt.Strategy):
         self.roi_from_high_10th_pct = []
         self.roi_from_low_90th_pct = []
 
-        
-
         # To keep track of pending orders
         self.order = None
-
-        # list to store prior_returns
-        self.prior_returns = []
-
-        # candle size
-        self.candleBodySize = []
-
-        # # To Keep track of account value
-        # self.balance = None
 
         # Balance before transaction
         self.account_Value = [ self.broker.get_cash() ]
@@ -80,7 +65,7 @@ class roiBands(bt.Strategy):
         self.shares = total_shares
 
         # transaction value
-        self.transaction_value = round(self.dataclose[0] * self.shares)
+        self.transaction_value = round(self.datas[0].close * self.shares)
         print("Transaction Amount {}, Number of Shares {}".format(self.transaction_value, self.shares))
 
 
@@ -121,16 +106,14 @@ class roiBands(bt.Strategy):
         dt = self.datas[0].datetime.date(0)
 
         self.date_.append(dt.isoformat())
-        self.open_.append(self.dataopen)
-        self.high_.append(self.datahigh)
-        self.low_.append(self.datalow)
-        self.close_.append(self.dataclose[0])
+        self.open_.append(self.datas[0].open[0])
+        self.high_.append(self.datas[0].high[0])
+        self.low_.append(self.datas[0].low[0])
+        self.close_.append(self.datas[0].close[0])
 
-
-
-        if len(self.close_) > 21 :
-            self.close_p15_max.append(np.max(self.close_[-21:]))
-            self.close_p15_min.append(np.min(self.close_[-21:]))
+        if len(self.close_) > self.period :
+            self.close_p15_max.append(np.max(self.close_[-self.period:]))
+            self.close_p15_min.append(np.min(self.close_[-self.period:]))
 
             self.roi_from_high.append(self.close_[-1] / self.close_p15_max[-1] - 1)
             self.roi_from_low.append(self.close_[-1] / self.close_p15_min[-1] - 1 )
@@ -142,15 +125,16 @@ class roiBands(bt.Strategy):
             if (self.roi_from_high[-1] <= self.roi_from_high_10th_pct[-1]
             ) & (self.roi_from_low[-1] < self.roi_from_low_90th_pct[-1]):
                 
-                while self.buy_triggers > 10:
+                while self.buy_triggers > self.buy_Hits:
                     # BUY, BUY, BUY!!! (with default parameters)
-                    self.log('BUY CREATED, %.2f' % self.dataclose[0])
+
+                    self.log('BUY CREATED, %.2f' % self.close_[-1])
 
                     # the currenr account value
                     account_value = self.broker.get_cash() 
 
                     # the number of shares I can buy
-                    total_shares = round(account_value * self.p.ratio / self.dataclose[0])
+                    total_shares = round(account_value * self.tradeSize_accountPct / self.close_[-1])
 
                     # Keep track of the created order to avoid a 2nd order
                     self.order = self.buy(size=total_shares)
@@ -177,8 +161,8 @@ class roiBands(bt.Strategy):
                 tot_shares = sum(self.total_shares_holding)
 
                 if (tot_shares > 0 ):
-                    while self.sell_triggers >= 5:
-                        self.log('SELL CREATED, %.2f' % self.dataclose[0])
+                    while self.sell_triggers >= self.sell_Hits:
+                        self.log('SELL CREATED, %.2f' % self.close_[-1])
 
                             # place sell order
                         # self.order = self.sell(size = self.total_shares_holding[0]) 
@@ -199,8 +183,8 @@ class roiBands(bt.Strategy):
                         self.sell_triggers = 0
                     self.sell_triggers += 1
 
-        data = {'Date': self.date_[21:],
-                'Close': self.close_[21:],
+        data = {'Date': self.date_[self.period:],
+                'Close': self.close_[self.period:],
                 'roi_from_high': self.roi_from_high,
                 'roi_from_low': self.roi_from_low,
                 'roi_from_high_10th_pct': self.roi_from_high_10th_pct,

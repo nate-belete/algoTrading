@@ -5,7 +5,7 @@ import numpy as np
 from Strategies.roiBands import roiBands
 
 # get data
-df = yf.download('vxx', '2022-01-10', '2022-11-16', interval = '1h')
+df = yf.download('SPY','2021-01-01', '2021-12-31', interval='1d')
 
 # establish an instance
 cerebro = bt.Cerebro()
