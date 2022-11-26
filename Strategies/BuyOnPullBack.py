@@ -7,17 +7,17 @@ import pandas as pd
 cerebro = bt.Cerebro()
 
 
-class roiBootStrapped(bt.Strategy):
+class BuyOnPullBack(bt.Strategy):
 
     def __init__(self):
 
         # number of datapoints needed to build strategy
-        self.period = 21
+        self.period = 7
         # percent of funds avaiable used on each trade
         self.tradeSize_accountPct = 0.50
 
         # number of buy hits trigerred before buying or selling
-        self.buy_Hits = 10
+        self.buy_Hits = 3
         self.sell_Hits = 3
 
         # bootstrapped means 
@@ -139,7 +139,7 @@ class roiBootStrapped(bt.Strategy):
             self.roi_from_high_10th_pct.append(np.quantile(self.roi_from_high[-self.period:],0.10))
             self.roi_from_low_90th_pct.append(np.quantile(self.roi_from_low[-self.period:],0.90))
 
-            if (self.roi_from_high[-1] <= self.roi_from_high_10th_pct[-1]):
+            if (self.roi_from_high[-1] <= self.boot_ratio_from_high_mean):
                     
                     # if trigger has been on for buy_Hits period, and the trigger just turned off
                 while (self.buy_triggers > self.buy_Hits) & (self.roi_from_high[-1] <= self.boot_ratio_from_high_mean):
@@ -183,17 +183,7 @@ class roiBootStrapped(bt.Strategy):
                 self.buy_triggers += 1
 
             
-            if  (self.roi_from_low[-1] >= self.roi_from_low_90th_pct[-1]):
-
-                # print("self.sell ")
-                # print("self.buy_Hits ", self.buy_Hits)
-                # print("--")
-                # print("roi_from_low[-1] ", self.roi_from_low[-1])
-                # print("self.roi_from_low_90th_pct ", self.roi_from_low_90th_pct[-1])
-                # print("--")
-                # print("--")
-                # print("--")
-                    #& (len(self.total_shares_holding)>0):
+            if  (self.roi_from_low[-1] >= self.boot_ratio_from_low_mean):
 
                 tot_shares = sum(self.total_shares_holding)
 

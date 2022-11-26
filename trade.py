@@ -2,10 +2,10 @@ import datetime as dt
 import yfinance as yf
 import backtrader as bt 
 import numpy as np
-from Strategies.roiBootStrapped import roiBootStrapped
+from Strategies.BuyOnPullBack import BuyOnPullBack
 
 # get data
-df = yf.download('SPY','2021-01-01', '2022-12-31', interval='1h')
+df = yf.download('ES=F','2022-05-01', '2022-12-31', interval='1d')
 
 # establish an instance
 cerebro = bt.Cerebro()
@@ -17,7 +17,7 @@ feed = bt.feeds.PandasData(dataname = df)
 cerebro.adddata(feed)
 
 # add strategy
-cerebro.addstrategy(roiBootStrapped)
+cerebro.addstrategy(BuyOnPullBack)
 
 # Set initial account value
 cerebro.broker.setcash(100000)
