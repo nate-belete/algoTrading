@@ -12,17 +12,19 @@ class BuyOnPullBack(bt.Strategy):
     def __init__(self):
 
         # number of datapoints needed to build strategy
-        self.period = 7
+        self.period = 21
+        self.period_buy = 21
+        self.period_sell = 30
         # percent of funds avaiable used on each trade
         self.tradeSize_accountPct = 0.50
 
         # number of buy hits trigerred before buying or selling
-        self.buy_Hits = 3
-        self.sell_Hits = 3
+        self.buy_Hits = 10
+        self.sell_Hits = 1
 
         # bootstrapped means 
-        self.boot_ratio_from_high_mean = -0.045
-        self.boot_ratio_from_low_mean = 0.025
+        self.boot_ratio_from_high_mean = -0.05
+        self.boot_ratio_from_low_mean = abs(self.boot_ratio_from_high_mean)*1.0
 
         self.date_ = []
         self.open_ = []
@@ -54,6 +56,8 @@ class BuyOnPullBack(bt.Strategy):
         # counts the number of triggers
         self.buy_triggers = 0
         self.sell_triggers = 0
+
+        self.round = 0
 
 
 
@@ -136,8 +140,10 @@ class BuyOnPullBack(bt.Strategy):
 
             
 
-            self.roi_from_high_10th_pct.append(np.quantile(self.roi_from_high[-self.period:],0.10))
-            self.roi_from_low_90th_pct.append(np.quantile(self.roi_from_low[-self.period:],0.90))
+            self.roi_from_high_10th_pct.append(np.quantile(self.roi_from_high[-self.period_buy:],0.10))
+            self.roi_from_low_90th_pct.append(np.quantile(self.roi_from_low[-self.period_sell:],0.90))
+
+
 
             if (self.roi_from_high[-1] <= self.boot_ratio_from_high_mean):
                     

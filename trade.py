@@ -5,7 +5,7 @@ import numpy as np
 from Strategies.BuyOnPullBack import BuyOnPullBack
 
 # get data
-df = yf.download('ES=F','2022-05-01', '2022-12-31', interval='1d')
+df = yf.download('AMD','2022-01-01', '2022-10-31', interval='1h')
 
 # establish an instance
 cerebro = bt.Cerebro()
