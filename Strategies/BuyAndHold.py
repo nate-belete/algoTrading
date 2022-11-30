@@ -4,6 +4,7 @@ class BuyAndHold(bt.Strategy):
     def start(self):
         self.val_start = self.broker.get_cash()  # keep the starting cash
 
+
     def nextstart(self):
         print("next start")
         # Buy all the available cash
