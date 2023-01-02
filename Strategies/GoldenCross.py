@@ -37,6 +37,8 @@ class GoldenCross(bt.Strategy):
             self.slowma
         )
 
+
+
     def next(self):
         if self.position.size == 0:
             if  (self.crossoverFaster < 0):
