@@ -2,10 +2,10 @@ import datetime as dt
 import yfinance as yf
 import backtrader as bt 
 import numpy as np
-from Strategies.GoldenCross import GoldenCross
+from Strategies.MovingAverageStrategy import MovingAverageStrategy
 
 # get data
-df = yf.download('SPY','2022-01-01', '2022-10-31', interval='1h')
+df = yf.download('SPY','2022-01-01', '2022-10-31', interval='1d')
 
 # establish an instance
 cerebro = bt.Cerebro()
@@ -17,7 +17,7 @@ feed = bt.feeds.PandasData(dataname = df)
 cerebro.adddata(feed)
 
 # add strategy
-cerebro.addstrategy(GoldenCross)
+cerebro.addstrategy(MovingAverageStrategy)
 
 # Set initial account value
 cerebro.broker.setcash(100000)
