@@ -5,7 +5,7 @@ import numpy as np
 from Strategies.MovingAverageStrategy import MovingAverageStrategy
 
 # get data
-df = yf.download('SPY','2022-01-01', '2022-10-31', interval='1d')
+df = yf.download('SPY','2022-01-01', '2022-12-31', interval='1d')
 
 # establish an instance
 cerebro = bt.Cerebro()
