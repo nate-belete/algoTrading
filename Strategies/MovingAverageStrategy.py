@@ -20,8 +20,9 @@ class MovingAverageStrategy(bt.Strategy):
                 # Use 50% of account value to enter trade
                 amount_to_invest = (self.order_pct * self.broker.cash)
                 self.size = math.floor(amount_to_invest / self.data.close)
+                self.date = self.data.datetime.date(0)
 
-                print("Buy {} shares at {}".format(self.size,  self.data.close[0]))
+                print("{}: Buy {} shares at {}".format(self.date, self.size,  round(self.data.close[0])))
                 self.buy(size=self.size)
 
 
@@ -30,5 +31,6 @@ class MovingAverageStrategy(bt.Strategy):
             # if we have an open position, sell
             if self.position:
                 self.num_shares = self.position.size
-                print("Sell {} shares at {}".format(self.num_shares,  self.data.close[0]))
+                self.date = self.data.datetime.date(0)
+                print("{}: Sell {} shares at {}".format(self.date, self.num_shares,  round(self.data.close[0])))
                 self.sell(size=self.num_shares)
